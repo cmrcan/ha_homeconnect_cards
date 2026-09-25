@@ -7,8 +7,8 @@ const sourcePath = resolve(root, "src/ha_homeconnect_cards.js");
 const targetPath = resolve(root, "dist/ha_homeconnect_cards.js");
 
 const source = await readFile(sourcePath, "utf8");
-if (!source.includes('customElements.define("dishwasher-card"')) {
-  throw new Error("Source does not register custom:dishwasher-card");
+if (!source.includes('customElements.define("homeconnect-card"')) {
+  throw new Error("Source does not register custom:homeconnect-card");
 }
 
 await mkdir(dirname(targetPath), { recursive: true });

@@ -398,7 +398,7 @@ class DishwasherCard extends HTMLElement {
   }
 }
 
-if (!customElements.get("dishwasher-card")) customElements.define("dishwasher-card", DishwasherCard);
+if (!customElements.get("homeconnect-card")) customElements.define("homeconnect-card", DishwasherCard);
 globalThis.customCards = globalThis.customCards || [];
 const matchesEntity = (entity, terms) => {
   const entityId = String(entity?.entity_id || entity || "").toLowerCase();
