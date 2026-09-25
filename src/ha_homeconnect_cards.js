@@ -592,28 +592,45 @@ ${
 }
 
         </header>
-        <div class="hero">
-          
-       ${showProgress ? `
+     <div class="hero">
+
+  <div class="visual ${running ? "running" : ""}">
+    <div class="machine">
+      <ha-icon icon="${this._escape(profile.icon)}"></ha-icon>
+      ${running ? '<i class="b1"></i><i class="b2"></i><i class="b3"></i>' : ""}
+    </div>
+  </div>
+
+  <div class="summary">
+    <div class="operation ${this._escape(operation)}">
+      ${this._escape(t[operation] || t.unknown)}
+    </div>
+
+    <div class="program">
+      ${this._escape(this._programLabel(program))}
+    </div>
+
+    <div class="facts">
+      ${finish ? `<div><ha-icon icon="mdi:clock-check-outline"></ha-icon><span><small>${t.finish}</small>${this._escape(finish)}</span></div>` : ""}
+      ${this._state("door") ? `<div><ha-icon icon="${door.icon}"></ha-icon><span><small>${t.program}</small>${this._escape(door.label)}</span></div>` : ""}
+    </div>
+  </div>
+
+</div>
+
+${showProgress ? `
   <section data-info="progress">
     <label>
       <ha-icon icon="mdi:progress-clock"></ha-icon>
       ${this._escape(progressName)} · ${this._escape(progressText)}
     </label>
 
-    <ha-bar id="program-progress"></ha-bar>
+    <ha-bar
+      id="program-progress"
+      style="display:block;width:100%"
+    ></ha-bar>
   </section>
 ` : ""}
-
-          <div class="summary">
-            <div class="operation ${this._escape(operation)}">${this._escape(t[operation] || t.unknown)}</div>
-            <div class="program">${this._escape(this._programLabel(program))}</div>
-            <div class="facts">
-              ${finish ? `<div><ha-icon icon="mdi:clock-check-outline"></ha-icon><span><small>${t.finish}</small>${this._escape(finish)}</span></div>` : ""}
-              ${this._state("door") ? `<div><ha-icon icon="${door.icon}"></ha-icon><span><small>${t.program}</small>${this._escape(door.label)}</span></div>` : ""}
-            </div>
-          </div>
-        </div>
         <div class="pills">
           ${this._state("door") ? `<button class="pill ${door.tone}" data-info="door"><ha-icon icon="${door.icon}"></ha-icon>${this._escape(door.label)}</button>` : ""}
           ${this._state("remoteStart") ? `<button class="pill ${remote ? "good" : "muted"}" data-info="remoteStart"><ha-icon icon="${remote ? "mdi:play-network" : "mdi:play-network-outline"}"></ha-icon>${remote ? t.remote : t.noRemote}</button>` : ""}
