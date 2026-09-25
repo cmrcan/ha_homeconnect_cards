@@ -568,26 +568,43 @@ class HomeConnectCard extends HTMLElement {
     const remote = this._on("remoteStart");
     const running = this._running();
     const connectivityText = connectivity ? this._hass.formatEntityState?.(connectivity) || connectivity.state : "";
-    const connectivityColor =  connectivity?.state === "on" ? "var(--success-color)" : connectivity?.state === "off" ? "var(--error-color)"  : "var(--warning-color)";
+    const connectivityColor = connectivity?.state === "on" ? "var(--success-color)" : connectivity?.state === "off" ? "var(--error-color)" : "var(--warning-color)";
+    const progressState = this._state("progress");
+    const showProgress = Boolean(progressState) && progress !== null;
+
+    const progressText = showProgress ? this._hass.formatEntityState?.(progressState) || `${Math.round(progress)}%` : "";
+
+    const progressName = progressState?.attributes?.friendly_name || t.progress;
 
     this.shadowRoot.innerHTML = this._frame(`
       <div class="card" style="--accent:${this._escape(this._config.accent_color || "var(--primary-color)")}">
         <header>
           <div><div class="title">${this._escape(this._title())}</div><div class="subtitle">${this._escape(this._programLabel(program))}</div></div>
          
-${connectivity ? ` <ha-badge type="button" data-info="connectivity" style="--badge-color:${connectivityColor}">
+${
+  connectivity
+    ? ` <ha-badge type="button" data-info="connectivity" style="--badge-color:${connectivityColor}">
     <ha-icon slot="icon" icon="mdi:lan-connect"></ha-icon>
     <span>${this._escape(connectivityText)}</span>
   </ha-badge>
-` : ""}
+`
+    : ""
+}
 
         </header>
         <div class="hero">
-          <div class="visual ${running ? "running" : ""}">
-            <svg viewBox="0 0 140 140"><circle class="track" cx="70" cy="70" r="58"></circle><circle class="value" cx="70" cy="70" r="58" style="stroke-dasharray:${circumference};stroke-dashoffset:${offset}"></circle></svg>
-            <div class="machine"><ha-icon icon="${this._escape(this._profileIcon(profile.type))}"></ha-icon>${running ? '<i class="b1"></i><i class="b2"></i><i class="b3"></i>' : ""}</div>
-            <div class="percent"><b>${progress === null ? "—" : `${Math.round(progress)}%`}</b><small>${t.progress}</small></div>
-          </div>
+          
+       ${showProgress ? `
+  <section data-info="progress">
+    <label>
+      <ha-icon icon="mdi:progress-clock"></ha-icon>
+      ${this._escape(progressName)} · ${this._escape(progressText)}
+    </label>
+
+    <ha-bar id="program-progress"></ha-bar>
+  </section>
+` : ""}
+
           <div class="summary">
             <div class="operation ${this._escape(operation)}">${this._escape(t[operation] || t.unknown)}</div>
             <div class="program">${this._escape(this._programLabel(program))}</div>
@@ -607,6 +624,16 @@ ${connectivity ? ` <ha-badge type="button" data-info="connectivity" style="--bad
         ${this._actions()}
       </div>
     `);
+
+const progressBar =
+  this.shadowRoot.querySelector("#program-progress");
+
+if (progressBar && showProgress) {
+  progressBar.min = 0;
+  progressBar.max = 100;
+  progressBar.value = progress;
+}
+
     this._bind();
   }
 
