@@ -1,10 +1,8 @@
 # HA Home Connect Cards
 
-A standalone Home Assistant dashboard card for [Home Connect](https://www.home-assistant.io/integrations/home_connect/) dishwashers.
 
-<picture>
-  <img src="docs/images/card-preview.png" height="600" alt="Dishwasher card preview" />
-</picture>
+
+
 
 ## Features
 
