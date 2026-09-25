@@ -21,7 +21,6 @@ const SUFFIXES = {
   stop: ["_stop_program"],
 };
 
-
 const APPLIANCE_PROFILES = Object.freeze({
   DISHWASHER: "dishwasher",
   COFFEE_MAKER: "coffee_maker",
@@ -236,8 +235,7 @@ const TEXT = {
 };
 
 class HomeConnectCard extends HTMLElement {
- 
- constructor() {
+  constructor() {
     super();
     this.attachShadow({ mode: "open" });
     this._config = null;
@@ -248,7 +246,7 @@ class HomeConnectCard extends HTMLElement {
   }
 
   //static getStubConfig() {
-    //return { type: "custom:homeconnect-card", device_id: "", title: "Geschirrspüler" };
+  //return { type: "custom:homeconnect-card", device_id: "", title: "Geschirrspüler" };
   //}
 
   static getStubConfig() {
@@ -262,7 +260,6 @@ class HomeConnectCard extends HTMLElement {
   static getConfigElement() {
     return document.createElement("ha-homeconnect-card-editor");
   }
-
 
   static getConfigForm() {
     const labels = {
@@ -326,35 +323,13 @@ class HomeConnectCard extends HTMLElement {
           type: "expandable",
           name: "entities",
           title: "Manual entity mapping (advanced)",
-          schema: [
-            entity("connectivity", "binary_sensor"),
-            entity("remoteStart", "binary_sensor"),
-            entity("door", "sensor"),
-            entity("operation", "sensor"),
-            entity("finish", "sensor"),
-            entity("progress", "sensor"),
-            entity("activeProgram", "select"),
-            entity("selectedProgram", "select"),
-            entity("delay", "number"),
-            entity("halfLoad", "switch"),
-            entity("hygiene", "switch"),
-            entity("intensiveZone", "switch"),
-            entity("power", "switch"),
-            entity("silence", "switch"),
-            entity("varioSpeed", "switch"),
-            entity("stop", "button"),
-          ],
+          schema: [entity("connectivity", "binary_sensor"), entity("remoteStart", "binary_sensor"), entity("door", "sensor"), entity("operation", "sensor"), entity("finish", "sensor"), entity("progress", "sensor"), entity("activeProgram", "select"), entity("selectedProgram", "select"), entity("delay", "number"), entity("halfLoad", "switch"), entity("hygiene", "switch"), entity("intensiveZone", "switch"), entity("power", "switch"), entity("silence", "switch"), entity("varioSpeed", "switch"), entity("stop", "button")],
         },
       ],
       computeLabel: (schema) => labels[schema.name],
-      computeHelper: (schema) =>
-        schema.name === "device_id"
-          ? "Select a Home Connect appliance. Entities will be discovered automatically."
-          : undefined,
+      computeHelper: (schema) => (schema.name === "device_id" ? "Select a Home Connect appliance. Entities will be discovered automatically." : undefined),
     };
   }
-
-
 
   setConfig(config) {
     if (!config || typeof config !== "object") {
@@ -367,23 +342,13 @@ class HomeConnectCard extends HTMLElement {
       show_options: true,
       ...config,
     };
-      const configuredEntities = Object.fromEntries(
-      Object.entries(config.entities || {}).filter(
-        ([, entityId]) => Boolean(entityId),
-      ),
-    );
+    const configuredEntities = Object.fromEntries(Object.entries(config.entities || {}).filter(([, entityId]) => Boolean(entityId)));
 
-    this._entities = Object.keys(configuredEntities).length
-      ? configuredEntities
-      : null;
+    this._entities = Object.keys(configuredEntities).length ? configuredEntities : null;
     this._discovering = false;
     this._signature = "";
     this._render();
   }
-
-
-
-
 
   set hass(hass) {
     this._hass = hass;
@@ -397,17 +362,21 @@ class HomeConnectCard extends HTMLElement {
     }
   }
 
-
-
-  getCardSize() { return 5; }
-  getGridOptions() { return { columns: 12, min_columns: 6, rows: 5, min_rows: 4 }; }
+  getCardSize() {
+    return 5;
+  }
+  getGridOptions() {
+    return { columns: 12, min_columns: 6, rows: 5, min_rows: 4 };
+  }
 
   get _language() {
     const language = this._hass?.locale?.language || this._hass?.language || "de";
     return String(language).toLowerCase().startsWith("de") ? "de" : "en";
   }
 
-  get _text() { return TEXT[this._language]; }
+  get _text() {
+    return TEXT[this._language];
+  }
 
   async _discover() {
     this._discovering = true;
@@ -446,18 +415,11 @@ class HomeConnectCard extends HTMLElement {
     const device = this._hass?.devices?.[this._config?.device_id];
     const profile = detectApplianceProfile(device);
 
-    relevant.__profile = [
-      profile.type,
-      profile.brand,
-      profile.model,
-      profile.matchedPrefix,
-    ];
+    relevant.__profile = [profile.type, profile.brand, profile.model, profile.matchedPrefix];
 
     for (const [key, id] of Object.entries(this._entities)) {
       const state = this._hass.states[id];
-      relevant[key] = state
-        ? [state.state, state.attributes?.options]
-        : null;
+      relevant[key] = state ? [state.state, state.attributes?.options] : null;
     }
 
     return JSON.stringify(relevant);
@@ -473,9 +435,15 @@ class HomeConnectCard extends HTMLElement {
     return Boolean(state && !["unavailable", "unknown"].includes(state.state));
   }
 
-  _on(key) { return this._state(key)?.state === "on"; }
-  _operation() { return this._state("operation")?.state || "unknown"; }
-  _running() { return ["run", "pause", "delayedstart", "aborting"].includes(this._operation()); }
+  _on(key) {
+    return this._state(key)?.state === "on";
+  }
+  _operation() {
+    return this._state("operation")?.state || "unknown";
+  }
+  _running() {
+    return ["run", "pause", "delayedstart", "aborting"].includes(this._operation());
+  }
 
   _progress() {
     const value = Number(this._state("progress")?.state);
@@ -527,13 +495,7 @@ class HomeConnectCard extends HTMLElement {
     const device = this._hass?.devices?.[this._config?.device_id];
     const profile = detectApplianceProfile(device);
 
-    const profileSignature = [
-      this._config?.device_id,
-      profile.type,
-      profile.brand,
-      profile.model,
-      profile.matchedPrefix,
-    ].join("|");
+    const profileSignature = [this._config?.device_id, profile.type, profile.brand, profile.model, profile.matchedPrefix].join("|");
 
     if (profileSignature !== this._lastProfileSignature) {
       this._lastProfileSignature = profileSignature;
@@ -570,7 +532,6 @@ class HomeConnectCard extends HTMLElement {
     }
   }
 
-
   _title() {
     const configuredTitle = String(this._config?.title || "").trim();
 
@@ -582,8 +543,6 @@ class HomeConnectCard extends HTMLElement {
 
     return device?.name_by_user || device?.name || "Home Connect Appliance";
   }
-
-
 
   _render() {
     if (!this.shadowRoot || !this._config) return;
@@ -605,16 +564,22 @@ class HomeConnectCard extends HTMLElement {
     const program = this._program();
     const finish = this._finish();
     const door = this._door();
-    const online = this._on("connectivity");
+    const connectivity = this._state("connectivity");
     const remote = this._on("remoteStart");
     const running = this._running();
+    const connectivityText = connectivity ? this._hass.formatEntityState?.(connectivity) || connectivity.state : "";
+    const connectivityColor =  connectivity?.state === "on" ? "var(--success-color)" : connectivity?.state === "off" ? "var(--error-color)"  : "var(--warning-color)";
 
     this.shadowRoot.innerHTML = this._frame(`
       <div class="card" style="--accent:${this._escape(this._config.accent_color || "var(--primary-color)")}">
         <header>
           <div><div class="title">${this._escape(this._title())}</div><div class="subtitle">${this._escape(this._programLabel(program))}</div></div>
          
-          ${this._state("connectivity") ? `<button class="status ${online ? "good" : "bad"}" data-info="connectivity"><span></span>${online ? t.online : t.offline}</button>` : ""}
+${connectivity ? ` <ha-badge type="button" data-info="connectivity" style="--badge-color:${connectivityColor}">
+    <ha-icon slot="icon" icon="mdi:lan-connect"></ha-icon>
+    <span>${this._escape(connectivityText)}</span>
+  </ha-badge>
+` : ""}
 
         </header>
         <div class="hero">
@@ -742,10 +707,7 @@ class HomeConnectCardEditor extends HTMLElement {
     `;
 
     this._form = document.createElement("ha-form");
-    this._form.addEventListener(
-      "value-changed",
-      (event) => this._valueChanged(event),
-    );
+    this._form.addEventListener("value-changed", (event) => this._valueChanged(event));
 
     this.shadowRoot.append(style, this._form);
   }
@@ -779,22 +741,14 @@ class HomeConnectCardEditor extends HTMLElement {
         deviceId: entry.device_id,
         platform: entry.platform,
       }))
-      .filter(
-        (entry) =>
-          entry.deviceId === deviceId &&
-          (!entry.platform || entry.platform === "home_connect"),
-      )
+      .filter((entry) => entry.deviceId === deviceId && (!entry.platform || entry.platform === "home_connect"))
       .map((entry) => entry.entityId)
       .filter(Boolean)
       .sort((first, second) => first.localeCompare(second));
   }
 
   _selectorDomains(entitySelector) {
-    const filters = Array.isArray(entitySelector?.filter)
-      ? entitySelector.filter
-      : entitySelector?.filter
-        ? [entitySelector.filter]
-        : [];
+    const filters = Array.isArray(entitySelector?.filter) ? entitySelector.filter : entitySelector?.filter ? [entitySelector.filter] : [];
 
     return new Set(
       filters.flatMap((filter) => {
@@ -802,9 +756,7 @@ class HomeConnectCardEditor extends HTMLElement {
           return [];
         }
 
-        return Array.isArray(filter.domain)
-          ? filter.domain
-          : [filter.domain];
+        return Array.isArray(filter.domain) ? filter.domain : [filter.domain];
       }),
     );
   }
@@ -816,10 +768,7 @@ class HomeConnectCardEditor extends HTMLElement {
       };
 
       if (Array.isArray(field.schema)) {
-        updatedField.schema = this._filterSchema(
-          field.schema,
-          allowedEntityIds,
-        );
+        updatedField.schema = this._filterSchema(field.schema, allowedEntityIds);
       }
 
       const entitySelector = field.selector?.entity;
@@ -858,16 +807,11 @@ class HomeConnectCardEditor extends HTMLElement {
 
     const formDefinition = HomeConnectCard.getConfigForm();
 
-    const allowedEntityIds = this._deviceEntityIds(
-      this._config.device_id,
-    );
+    const allowedEntityIds = this._deviceEntityIds(this._config.device_id);
 
     this._form.hass = this._hass;
     this._form.data = this._config;
-    this._form.schema = this._filterSchema(
-      formDefinition.schema,
-      allowedEntityIds,
-    );
+    this._form.schema = this._filterSchema(formDefinition.schema, allowedEntityIds);
     this._form.computeLabel = formDefinition.computeLabel;
     this._form.computeHelper = formDefinition.computeHelper;
   }
@@ -902,12 +846,8 @@ class HomeConnectCardEditor extends HTMLElement {
 }
 
 if (!customElements.get("ha-homeconnect-card-editor")) {
-  customElements.define(
-    "ha-homeconnect-card-editor",
-    HomeConnectCardEditor,
-  );
+  customElements.define("ha-homeconnect-card-editor", HomeConnectCardEditor);
 }
-
 
 if (!customElements.get("homeconnect-card")) {
   customElements.define("homeconnect-card", HomeConnectCard);
