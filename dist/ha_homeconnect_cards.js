@@ -21,6 +21,131 @@ const SUFFIXES = {
   stop: ["_stop_program"],
 };
 
+
+const APPLIANCE_PROFILES = Object.freeze({
+  DISHWASHER: "dishwasher",
+  COFFEE_MAKER: "coffee_maker",
+  OVEN: "oven",
+  WASHER: "washer",
+  DRYER: "dryer",
+  GENERIC: "generic",
+});
+
+const MODEL_PROFILE_RULES = Object.freeze({
+  siemens: [
+    {
+      profile: APPLIANCE_PROFILES.DISHWASHER,
+      prefixes: ["SN", "SX", "SR", "SK"],
+    },
+    {
+      profile: APPLIANCE_PROFILES.COFFEE_MAKER,
+      prefixes: ["TE", "TP", "TQ", "CT"],
+    },
+    {
+      profile: APPLIANCE_PROFILES.OVEN,
+      prefixes: ["HB", "HN", "HR", "HS", "HM", "CM", "CD"],
+    },
+    {
+      profile: APPLIANCE_PROFILES.WASHER,
+      prefixes: ["WM", "WG", "WU"],
+    },
+    {
+      profile: APPLIANCE_PROFILES.DRYER,
+      prefixes: ["WT"],
+    },
+  ],
+
+  bosch: [
+    {
+      profile: APPLIANCE_PROFILES.DISHWASHER,
+      prefixes: ["SMS", "SMV", "SMI", "SMD", "SBV", "SPV", "SPS"],
+    },
+    {
+      profile: APPLIANCE_PROFILES.COFFEE_MAKER,
+      prefixes: ["CTL", "TIE", "TIS", "TQU"],
+    },
+    {
+      profile: APPLIANCE_PROFILES.OVEN,
+      prefixes: ["HBG", "HRG", "HSG", "HMG", "CMG", "CSG"],
+    },
+    {
+      profile: APPLIANCE_PROFILES.WASHER,
+      prefixes: ["WGB", "WGG", "WAX", "WAN"],
+    },
+    {
+      profile: APPLIANCE_PROFILES.DRYER,
+      prefixes: ["WQB", "WQG", "WTW"],
+    },
+  ],
+});
+
+const normalizeApplianceModel = (model) =>
+  String(model || "")
+    .trim()
+    .toUpperCase()
+    .split("/")[0]
+    .replace(/[^A-Z0-9]/g, "");
+
+const getApplianceBrand = (manufacturer) => {
+  const normalizedManufacturer = String(manufacturer || "")
+    .trim()
+    .toLowerCase();
+
+  if (normalizedManufacturer.includes("siemens")) {
+    return "siemens";
+  }
+
+  if (normalizedManufacturer.includes("bosch")) {
+    return "bosch";
+  }
+
+  return null;
+};
+
+const detectApplianceProfile = (device) => {
+  const manufacturer = String(device?.manufacturer || "").trim();
+  const brand = getApplianceBrand(manufacturer);
+  const model = normalizeApplianceModel(device?.model);
+
+  const fallback = {
+    type: APPLIANCE_PROFILES.GENERIC,
+    source: "fallback",
+    manufacturer,
+    brand,
+    model,
+    matchedPrefix: null,
+  };
+
+  if (!brand || !model) {
+    return fallback;
+  }
+
+  const matches = MODEL_PROFILE_RULES[brand]
+    .flatMap((rule) =>
+      rule.prefixes.map((prefix) => ({
+        type: rule.profile,
+        prefix,
+      })),
+    )
+    .filter((rule) => model.startsWith(rule.prefix))
+    .sort((first, second) => second.prefix.length - first.prefix.length);
+
+  const match = matches[0];
+
+  if (!match) {
+    return fallback;
+  }
+
+  return {
+    type: match.type,
+    source: "model",
+    manufacturer,
+    brand,
+    model,
+    matchedPrefix: match.prefix,
+  };
+};
+
 const DEFAULT_PROGRAMS = {
   dishcare_dishwasher_program_intensiv_70: "Intensiv 70 °C",
   dishcare_dishwasher_program_auto_2: "Auto",
@@ -311,11 +436,25 @@ class HomeConnectCard extends HTMLElement {
 
   _stateSignature() {
     if (!this._hass || !this._entities) return "";
+
     const relevant = {};
+    const device = this._hass?.devices?.[this._config?.device_id];
+    const profile = detectApplianceProfile(device);
+
+    relevant.__profile = [
+      profile.type,
+      profile.brand,
+      profile.model,
+      profile.matchedPrefix,
+    ];
+
     for (const [key, id] of Object.entries(this._entities)) {
       const state = this._hass.states[id];
-      relevant[key] = state ? [state.state, state.attributes?.options] : null;
+      relevant[key] = state
+        ? [state.state, state.attributes?.options]
+        : null;
     }
+
     return JSON.stringify(relevant);
   }
 
@@ -379,6 +518,53 @@ class HomeConnectCard extends HTMLElement {
       .replaceAll("'", "&#039;");
   }
 
+  _applianceProfile() {
+    const device = this._hass?.devices?.[this._config?.device_id];
+    const profile = detectApplianceProfile(device);
+
+    const profileSignature = [
+      this._config?.device_id,
+      profile.type,
+      profile.brand,
+      profile.model,
+      profile.matchedPrefix,
+    ].join("|");
+
+    if (profileSignature !== this._lastProfileSignature) {
+      this._lastProfileSignature = profileSignature;
+
+      console.info("[HA HomeConnect Cards] Appliance profile detected", {
+        deviceId: this._config?.device_id,
+        deviceName: device?.name_by_user || device?.name,
+        ...profile,
+      });
+    }
+
+    return profile;
+  }
+
+  _profileIcon(type) {
+    switch (type) {
+      case APPLIANCE_PROFILES.DISHWASHER:
+        return "mdi:dishwasher";
+
+      case APPLIANCE_PROFILES.COFFEE_MAKER:
+        return "mdi:coffee-maker";
+
+      case APPLIANCE_PROFILES.OVEN:
+        return "mdi:stove";
+
+      case APPLIANCE_PROFILES.WASHER:
+        return "mdi:washing-machine";
+
+      case APPLIANCE_PROFILES.DRYER:
+        return "mdi:tumble-dryer";
+
+      default:
+        return "mdi:devices";
+    }
+  }
+
 
   _title() {
     const configuredTitle = String(this._config?.title || "").trim();
@@ -404,8 +590,8 @@ class HomeConnectCard extends HTMLElement {
       this.shadowRoot.innerHTML = this._frame(`<div class="message error"><ha-icon icon="mdi:alert-circle-outline"></ha-icon>${this._text.missing}</div>`);
       return;
     }
-
     const t = this._text;
+    const profile = this._applianceProfile();
     const operation = this._operation();
     const progress = this._progress();
     const percentage = progress ?? 0;
@@ -427,7 +613,7 @@ class HomeConnectCard extends HTMLElement {
         <div class="hero">
           <div class="visual ${running ? "running" : ""}">
             <svg viewBox="0 0 140 140"><circle class="track" cx="70" cy="70" r="58"></circle><circle class="value" cx="70" cy="70" r="58" style="stroke-dasharray:${circumference};stroke-dashoffset:${offset}"></circle></svg>
-            <div class="machine"><ha-icon icon="mdi:dishwasher"></ha-icon>${running ? '<i class="b1"></i><i class="b2"></i><i class="b3"></i>' : ""}</div>
+            <div class="machine"><ha-icon icon="${this._escape(this._profileIcon(profile.type))}"></ha-icon>${running ? '<i class="b1"></i><i class="b2"></i><i class="b3"></i>' : ""}</div>
             <div class="percent"><b>${progress === null ? "—" : `${Math.round(progress)}%`}</b><small>${t.progress}</small></div>
           </div>
           <div class="summary">
