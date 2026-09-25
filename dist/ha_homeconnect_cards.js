@@ -121,26 +121,138 @@ class DishwasherCard extends HTMLElement {
     this._signature = "";
   }
 
+  //static getStubConfig() {
+    //return { type: "custom:homeconnect-card", device_id: "", title: "Geschirrspüler" };
+  //}
+
   static getStubConfig() {
-    return { type: "custom:homeconnect-card", device_id: "", title: "Geschirrspüler" };
+    return {
+      show_program: true,
+      show_delay: true,
+      show_options: true,
+    };
   }
 
+  static getConfigForm() {
+    const labels = {
+      device_id: "Home Connect device",
+      title: "Card title",
+      accent_color: "Accent color (CSS)",
+      show_program: "Show program selection",
+      show_delay: "Show delayed start",
+      show_options: "Show program options",
+      connectivity: "Connectivity",
+      remoteStart: "Remote start",
+      door: "Door state",
+      operation: "Operation state",
+      finish: "Program finish time",
+      progress: "Program progress",
+      activeProgram: "Active program",
+      selectedProgram: "Selected program",
+      delay: "Delayed start",
+      halfLoad: "Half load",
+      hygiene: "Hygiene+",
+      intensiveZone: "Intensive zone",
+      power: "Power",
+      silence: "Silence on demand",
+      varioSpeed: "VarioSpeed+",
+      stop: "Stop program",
+    };
+
+    const entity = (name, domain) => ({
+      name,
+      selector: {
+        entity: {
+          filter: [{ integration: "home_connect", domain }],
+        },
+      },
+    });
+
+    return {
+      schema: [
+        {
+          name: "device_id",
+          selector: {
+            device: {
+              filter: [{ integration: "home_connect" }],
+            },
+          },
+        },
+        { name: "title", selector: { text: {} } },
+        { name: "accent_color", selector: { text: {} } },
+        {
+          type: "grid",
+          name: "",
+          flatten: true,
+          column_min_width: "180px",
+          schema: [
+            { name: "show_program", selector: { boolean: {} } },
+            { name: "show_delay", selector: { boolean: {} } },
+            { name: "show_options", selector: { boolean: {} } },
+          ],
+        },
+        {
+          type: "expandable",
+          name: "entities",
+          title: "Manual entity mapping (advanced)",
+          schema: [
+            entity("connectivity", "binary_sensor"),
+            entity("remoteStart", "binary_sensor"),
+            entity("door", "sensor"),
+            entity("operation", "sensor"),
+            entity("finish", "sensor"),
+            entity("progress", "sensor"),
+            entity("activeProgram", "select"),
+            entity("selectedProgram", "select"),
+            entity("delay", "number"),
+            entity("halfLoad", "switch"),
+            entity("hygiene", "switch"),
+            entity("intensiveZone", "switch"),
+            entity("power", "switch"),
+            entity("silence", "switch"),
+            entity("varioSpeed", "switch"),
+            entity("stop", "button"),
+          ],
+        },
+      ],
+      computeLabel: (schema) => labels[schema.name],
+      computeHelper: (schema) =>
+        schema.name === "device_id"
+          ? "Select a Home Connect appliance. Entities will be discovered automatically."
+          : undefined,
+    };
+  }
+
+
+
   setConfig(config) {
-    if (!config?.device_id && !config?.entities) {
-      throw new Error("homeconnect-card requires device_id or entities");
+    if (!config || typeof config !== "object") {
+      throw new Error("Invalid homeconnect-card configuration");
     }
     this._config = {
-      title: "Geschirrspüler",
+      title: "",
       show_program: true,
       show_delay: true,
       show_options: true,
       ...config,
     };
-    this._entities = config.entities ? { ...config.entities } : null;
+      const configuredEntities = Object.fromEntries(
+      Object.entries(config.entities || {}).filter(
+        ([, entityId]) => Boolean(entityId),
+      ),
+    );
+
+    this._entities = Object.keys(configuredEntities).length
+      ? configuredEntities
+      : null;
     this._discovering = false;
     this._signature = "";
     this._render();
   }
+
+
+
+
 
   set hass(hass) {
     this._hass = hass;
@@ -153,6 +265,8 @@ class DishwasherCard extends HTMLElement {
       this._render();
     }
   }
+
+
 
   getCardSize() { return 5; }
   getGridOptions() { return { columns: 12, min_columns: 6, rows: 5, min_rows: 4 }; }
@@ -264,6 +378,21 @@ class DishwasherCard extends HTMLElement {
       .replaceAll("'", "&#039;");
   }
 
+
+  _title() {
+    const configuredTitle = String(this._config?.title || "").trim();
+
+    if (configuredTitle) {
+      return configuredTitle;
+    }
+
+    const device = this._hass?.devices?.[this._config?.device_id];
+
+    return device?.name_by_user || device?.name || "Home Connect Appliance";
+  }
+
+
+
   _render() {
     if (!this.shadowRoot || !this._config) return;
     if (!this._hass || this._discovering) {
@@ -291,7 +420,7 @@ class DishwasherCard extends HTMLElement {
     this.shadowRoot.innerHTML = this._frame(`
       <div class="card" style="--accent:${this._escape(this._config.accent_color || "var(--primary-color)")}">
         <header>
-          <div><div class="title">${this._escape(this._config.title)}</div><div class="subtitle">${this._escape(this._programLabel(program))}</div></div>
+          <div><div class="title">${this._escape(this._title())}</div><div class="subtitle">${this._escape(this._programLabel(program))}</div></div>
           ${this._state("connectivity") ? `<button class="status ${online ? "good" : "bad"}" data-info="connectivity"><span></span>${online ? t.online : t.offline}</button>` : ""}
         </header>
         <div class="hero">
