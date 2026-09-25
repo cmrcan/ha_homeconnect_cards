@@ -3,8 +3,8 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const sourcePath = resolve(root, "src/homeassistant_custom_dishwasher_card.js");
-const targetPath = resolve(root, "dist/homeassistant_custom_dishwasher_card.js");
+const sourcePath = resolve(root, "src/ha_homeconnect_cards.js");
+const targetPath = resolve(root, "dist/ha_homeconnect_cards.js");
 
 const source = await readFile(sourcePath, "utf8");
 if (!source.includes('customElements.define("dishwasher-card"')) {

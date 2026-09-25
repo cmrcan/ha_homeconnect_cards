@@ -1,5 +1,5 @@
 // x-release-please-start-version
-const VERSION = "0.4.2";
+const VERSION = "0.1.0";
 // x-release-please-end
 
 const SUFFIXES = {
@@ -407,8 +407,8 @@ const matchesEntity = (entity, terms) => {
 };
 
 globalThis.customCards.push({
-  type: "dishwasher-card",
-  name: "Home Connect Dishwasher Card",
+  type: "homeconnect-card",
+  name: "Home Connect Card",
   description: "Home Connect dishwasher control card",
   preview: true,
   getEntitySuggestion: (hass, entityId) => {
@@ -417,7 +417,7 @@ globalThis.customCards.push({
     if (!device_id) return null;
     return {
       config: {
-        type: "custom:dishwasher-card",
+        type: "custom:homeconnect-card",
         device_id,
       },
     };

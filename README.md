@@ -1,4 +1,4 @@
-# Home Connect Dishwasher Card
+# HA Home Connect Cards
 
 A standalone Home Assistant dashboard card for [Home Connect](https://www.home-assistant.io/integrations/home_connect/) dishwashers.
 
@@ -32,12 +32,12 @@ The supported minimum is **Home Assistant 2026.6.0 or newer**. The card has been
 HACS installs the resource as:
 
 ```text
-/hacsfiles/homeassistant_custom_dishwasher_card/homeassistant_custom_dishwasher_card.js
+/hacsfiles/homeassistant_custom_dishwasher_card/ha_homeconnect_cards.js
 ```
 
 ### Manual
 
-Copy `dist/homeassistant_custom_dishwasher_card.js` to Home Assistant and register it as a JavaScript module.
+Copy `dist/ha_homeconnect_cards.js` to Home Assistant and register it as a JavaScript module.
 
 ## Configuration
 
@@ -98,7 +98,7 @@ in [docs/index.md](docs/index.md).
 1. Merge releasable Conventional Commits into `main`.
 2. Release Please creates or updates the release pull request and keeps all version sources aligned.
 3. Merge the release pull request after Jenkins, HACS and Dependency Review are green.
-4. The resulting version tag publishes `dist/homeassistant_custom_dishwasher_card.js` as the GitHub release asset.
+4. The resulting version tag publishes `dist/ha_homeconnect_cards.js` as the GitHub release asset.
 
 ## Support
 

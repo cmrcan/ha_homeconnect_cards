@@ -12,7 +12,7 @@
 2. Run `npm ci`.
 3. Run `npm test`.
 4. Run `npm run build`.
-5. Copy `dist/homeassistant_custom_dishwasher_card.js` to a Home Assistant test
+5. Copy `dist/ha_homeconnect_cards.js` to a Home Assistant test
    instance and register it as a JavaScript module.
 6. Add a `custom:dishwasher-card` using a Home Connect dishwasher `device_id`.
 

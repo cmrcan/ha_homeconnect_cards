@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const source = await readFile("src/homeassistant_custom_dishwasher_card.js", "utf8");
-const distribution = await readFile("dist/homeassistant_custom_dishwasher_card.js", "utf8");
+const source = await readFile("src/ha_homeconnect_cards.js", "utf8");
+const distribution = await readFile("dist/ha_homeconnect_cards.js", "utf8");
 const readme = await readFile("README.md", "utf8");
 const manifest = JSON.parse(await readFile("hacs.json", "utf8"));
 const packageJson = JSON.parse(await readFile("package.json", "utf8"));
@@ -17,7 +17,7 @@ const distributionVersion = distribution.match(versionPattern)?.[1];
 
 assert.equal(distribution, source, "dist file must match the source build");
 assert.equal(manifest.name, "Home Connect Dishwasher Card");
-assert.equal(manifest.filename, "homeassistant_custom_dishwasher_card.js");
+assert.equal(manifest.filename, "ha_homeconnect_cards.js");
 assert.equal(manifest.homeassistant, supportedHomeAssistant);
 assert.match(manifest.homeassistant, /^\d{4}\.\d{1,2}\.0$/);
 assert.ok(readme.includes("Home Assistant " + supportedHomeAssistant + " or newer"));

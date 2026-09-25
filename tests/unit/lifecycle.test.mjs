@@ -4,7 +4,7 @@ import test from "node:test";
 import { createHass, installCardDom } from "./test-helpers.mjs";
 
 const registry = installCardDom();
-await import("../../src/homeassistant_custom_dishwasher_card.js");
+await import("../../src/ha_homeconnect_cards.js");
 const DishwasherCard = registry.get("dishwasher-card");
 
 test("validates configuration and exposes layout metadata", () => {

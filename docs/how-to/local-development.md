@@ -3,7 +3,7 @@
 ## Setup
 
 Run `npm ci` with Node.js 24. Implement changes in
-`src/homeassistant_custom_dishwasher_card.js`; do not edit the distribution artifact
+`src/ha_homeconnect_cards.js`; do not edit the distribution artifact
 without making the corresponding source change.
 
 ## Development loop

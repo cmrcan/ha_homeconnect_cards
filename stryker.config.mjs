@@ -1,5 +1,5 @@
 export default {
-  mutate: ["src/homeassistant_custom_dishwasher_card.js:197-265"],
+  mutate: ["src/ha_homeconnect_cards.js:197-265"],
   testRunner: "command",
   commandRunner: {
     command: "npm run test:unit",

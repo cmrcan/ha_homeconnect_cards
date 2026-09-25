@@ -1,7 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 
 const packageJson = JSON.parse(await readFile("package.json", "utf8"));
-const sourcePath = "src/homeassistant_custom_dishwasher_card.js";
+const sourcePath = "src/ha_homeconnect_cards.js";
 const source = await readFile(sourcePath, "utf8");
 const versionPattern = /const VERSION = "[^"\n]+";/;
 

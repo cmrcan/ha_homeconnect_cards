@@ -13,4 +13,4 @@ The public configuration interface is the YAML card configuration documented in
 ## Distribution
 
 HACS and manual installations consume
-`dist/homeassistant_custom_dishwasher_card.js` as a JavaScript module.
+`dist/ha_homeconnect_cards.js` as a JavaScript module.
