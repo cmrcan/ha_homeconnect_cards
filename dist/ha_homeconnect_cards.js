@@ -110,8 +110,9 @@ const TEXT = {
   },
 };
 
-class DishwasherCard extends HTMLElement {
-  constructor() {
+class HomeConnectCard extends HTMLElement {
+ 
+ constructor() {
     super();
     this.attachShadow({ mode: "open" });
     this._config = null;
