@@ -528,7 +528,9 @@ class HomeConnectCard extends HTMLElement {
   }
 }
 
-if (!customElements.get("homeconnect-card")) customElements.define("homeconnect-card", DishwasherCard);
+if (!customElements.get("homeconnect-card")) {
+  customElements.define("homeconnect-card", HomeConnectCard);
+}
 globalThis.customCards = globalThis.customCards || [];
 const matchesEntity = (entity, terms) => {
   const entityId = String(entity?.entity_id || entity || "").toLowerCase();
