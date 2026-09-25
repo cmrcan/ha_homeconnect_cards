@@ -625,10 +625,12 @@ ${showProgress ? `
       ${this._escape(progressName)} · ${this._escape(progressText)}
     </label>
 
-    <ha-bar
-      id="program-progress"
-      style="display:block;width:100%"
-    ></ha-bar>
+  <ha-bar
+  min="0"
+  max="100"
+  value="${progress}"
+  style="display:block;width:100%"
+></ha-bar>
   </section>
 ` : ""}
         <div class="pills">
@@ -641,15 +643,6 @@ ${showProgress ? `
         ${this._actions()}
       </div>
     `);
-
-const progressBar =
-  this.shadowRoot.querySelector("#program-progress");
-
-if (progressBar && showProgress) {
-  progressBar.min = 0;
-  progressBar.max = 100;
-  progressBar.value = progress;
-}
 
     this._bind();
   }
