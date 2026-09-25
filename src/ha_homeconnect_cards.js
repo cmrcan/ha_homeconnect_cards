@@ -122,12 +122,12 @@ class DishwasherCard extends HTMLElement {
   }
 
   static getStubConfig() {
-    return { type: "custom:dishwasher-card", device_id: "", title: "Geschirrspüler" };
+    return { type: "custom:homeconnect-card", device_id: "", title: "Geschirrspüler" };
   }
 
   setConfig(config) {
     if (!config?.device_id && !config?.entities) {
-      throw new Error("dishwasher-card requires device_id or entities");
+      throw new Error("homeconnect-card requires device_id or entities");
     }
     this._config = {
       title: "Geschirrspüler",
@@ -185,7 +185,7 @@ class DishwasherCard extends HTMLElement {
         if (id) this._entities[key] = id;
       }
     } catch (error) {
-      console.error("dishwasher-card discovery failed", error);
+      console.error("homeconnect-card discovery failed", error);
       this._entities = {};
     } finally {
       this._discovering = false;
@@ -409,7 +409,7 @@ const matchesEntity = (entity, terms) => {
 globalThis.customCards.push({
   type: "homeconnect-card",
   name: "Home Connect Card",
-  description: "Home Connect dishwasher control card",
+  description: "Card for Home Connect Appliances",
   preview: true,
   getEntitySuggestion: (hass, entityId) => {
     if (!matchesEntity(hass.states?.[entityId], ["dishwasher", "geschirrspuler", "geschirrspüler", "dishcare_dishwasher"])) return null;
