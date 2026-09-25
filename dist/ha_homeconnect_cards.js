@@ -259,6 +259,11 @@ class HomeConnectCard extends HTMLElement {
     };
   }
 
+  static getConfigElement() {
+    return document.createElement("ha-homeconnect-card-editor");
+  }
+
+
   static getConfigForm() {
     const labels = {
       device_id: "Home Connect device",
@@ -608,7 +613,9 @@ class HomeConnectCard extends HTMLElement {
       <div class="card" style="--accent:${this._escape(this._config.accent_color || "var(--primary-color)")}">
         <header>
           <div><div class="title">${this._escape(this._title())}</div><div class="subtitle">${this._escape(this._programLabel(program))}</div></div>
+         
           ${this._state("connectivity") ? `<button class="status ${online ? "good" : "bad"}" data-info="connectivity"><span></span>${online ? t.online : t.offline}</button>` : ""}
+
         </header>
         <div class="hero">
           <div class="visual ${running ? "running" : ""}">
@@ -714,6 +721,194 @@ class HomeConnectCard extends HTMLElement {
   }
 }
 
+class HomeConnectCardEditor extends HTMLElement {
+  constructor() {
+    super();
+
+    this._hass = null;
+    this._config = null;
+
+    this.attachShadow({ mode: "open" });
+
+    const style = document.createElement("style");
+    style.textContent = `
+      :host {
+        display: block;
+      }
+
+      ha-form {
+        display: block;
+      }
+    `;
+
+    this._form = document.createElement("ha-form");
+    this._form.addEventListener(
+      "value-changed",
+      (event) => this._valueChanged(event),
+    );
+
+    this.shadowRoot.append(style, this._form);
+  }
+
+  set hass(hass) {
+    this._hass = hass;
+
+    if (this._form) {
+      this._form.hass = hass;
+    }
+
+    this._updateForm();
+  }
+
+  setConfig(config) {
+    this._config = {
+      ...config,
+    };
+
+    this._updateForm();
+  }
+
+  _deviceEntityIds(deviceId) {
+    if (!this._hass || !deviceId) {
+      return [];
+    }
+
+    return Object.entries(this._hass.entities || {})
+      .map(([entityId, entry]) => ({
+        entityId: entry.entity_id || entityId,
+        deviceId: entry.device_id,
+        platform: entry.platform,
+      }))
+      .filter(
+        (entry) =>
+          entry.deviceId === deviceId &&
+          (!entry.platform || entry.platform === "home_connect"),
+      )
+      .map((entry) => entry.entityId)
+      .filter(Boolean)
+      .sort((first, second) => first.localeCompare(second));
+  }
+
+  _selectorDomains(entitySelector) {
+    const filters = Array.isArray(entitySelector?.filter)
+      ? entitySelector.filter
+      : entitySelector?.filter
+        ? [entitySelector.filter]
+        : [];
+
+    return new Set(
+      filters.flatMap((filter) => {
+        if (!filter?.domain) {
+          return [];
+        }
+
+        return Array.isArray(filter.domain)
+          ? filter.domain
+          : [filter.domain];
+      }),
+    );
+  }
+
+  _filterSchema(schema, allowedEntityIds) {
+    return schema.map((field) => {
+      const updatedField = {
+        ...field,
+      };
+
+      if (Array.isArray(field.schema)) {
+        updatedField.schema = this._filterSchema(
+          field.schema,
+          allowedEntityIds,
+        );
+      }
+
+      const entitySelector = field.selector?.entity;
+
+      if (!entitySelector) {
+        return updatedField;
+      }
+
+      const domains = this._selectorDomains(entitySelector);
+
+      const includeEntities = allowedEntityIds.filter((entityId) => {
+        if (!domains.size) {
+          return true;
+        }
+
+        const domain = entityId.split(".")[0];
+        return domains.has(domain);
+      });
+
+      updatedField.selector = {
+        ...field.selector,
+        entity: {
+          ...entitySelector,
+          include_entities: includeEntities,
+        },
+      };
+
+      return updatedField;
+    });
+  }
+
+  _updateForm() {
+    if (!this._form || !this._hass || !this._config) {
+      return;
+    }
+
+    const formDefinition = HomeConnectCard.getConfigForm();
+
+    const allowedEntityIds = this._deviceEntityIds(
+      this._config.device_id,
+    );
+
+    this._form.hass = this._hass;
+    this._form.data = this._config;
+    this._form.schema = this._filterSchema(
+      formDefinition.schema,
+      allowedEntityIds,
+    );
+    this._form.computeLabel = formDefinition.computeLabel;
+    this._form.computeHelper = formDefinition.computeHelper;
+  }
+
+  _valueChanged(event) {
+    event.stopPropagation();
+
+    const nextConfig = {
+      ...event.detail.value,
+    };
+
+    const previousDeviceId = this._config?.device_id;
+    const nextDeviceId = nextConfig.device_id;
+
+    if (previousDeviceId !== nextDeviceId) {
+      delete nextConfig.entities;
+    }
+
+    this._config = nextConfig;
+    this._updateForm();
+
+    this.dispatchEvent(
+      new CustomEvent("config-changed", {
+        detail: {
+          config: nextConfig,
+        },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+}
+
+if (!customElements.get("ha-homeconnect-card-editor")) {
+  customElements.define(
+    "ha-homeconnect-card-editor",
+    HomeConnectCardEditor,
+  );
+}
+
+
 if (!customElements.get("homeconnect-card")) {
   customElements.define("homeconnect-card", HomeConnectCard);
 }
@@ -741,4 +936,4 @@ globalThis.customCards.push({
     };
   },
 });
-console.info(`%c DISHWASHER-CARD %c ${VERSION} `, "color:#fff;background:#1976d2;font-weight:700", "color:#1976d2;background:#fff;font-weight:700");
+//console.info(`%c DISHWASHER-CARD %c ${VERSION} `, "color:#fff;background:#1976d2;font-weight:700", "color:#1976d2;background:#fff;font-weight:700");
