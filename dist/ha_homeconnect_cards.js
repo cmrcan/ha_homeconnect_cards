@@ -628,14 +628,30 @@ class HomeConnectCard extends HTMLElement {
     this._bind();
   }
 
-  _programControl(running) {
-    if (!this._config.show_program || !this._available("selectedProgram")) return "";
-    const state = this._state("selectedProgram");
-    const options = state.attributes?.options || [];
-    if (!options.length) return "";
-    const html = options.map((value) => `<option value="${this._escape(value)}" ${value === state.state ? "selected" : ""}>${this._escape(this._programLabel(value))}</option>`).join("");
-    return `<section><label><ha-icon icon="mdi:playlist-check"></ha-icon>${this._text.program}</label><div class="select"><select id="program" ${running ? "disabled" : ""}>${html}</select><ha-icon icon="mdi:chevron-down"></ha-icon></div></section>`;
+_programControl(running) {
+  if (
+    !this._config.show_program ||
+    !this._available("selectedProgram")
+  ) {
+    return "";
   }
+
+  const state = this._state("selectedProgram");
+  const options = state?.attributes?.options || [];
+
+  if (!options.length) {
+    return "";
+  }
+
+  return `
+    <section class="program-control">
+      <ha-control-select-menu
+        id="program"
+        show-arrow
+      ></ha-control-select-menu>
+    </section>
+  `;
+}
 
   _delayControl(running) {
     if (!this._config.show_delay || !this._available("delay") || running) return "";
@@ -668,16 +684,100 @@ class HomeConnectCard extends HTMLElement {
     return `<footer>${power ? `<button class="action primary" data-action="power"><ha-icon icon="mdi:power"></ha-icon>${this._text.powerOn}</button>` : ""}${stop ? `<button class="action danger" data-action="stop"><ha-icon icon="mdi:stop-circle-outline"></ha-icon>${this._text.stop}</button>` : ""}</footer>`;
   }
 
-  _bind() {
-    this.shadowRoot.querySelectorAll("[data-info]").forEach((element) => element.addEventListener("click", () => this._moreInfo(element.dataset.info)));
-    this.shadowRoot.querySelectorAll("[data-toggle]").forEach((element) => element.addEventListener("click", () => this._service("homeassistant", "toggle", { entity_id: this._entities[element.dataset.toggle] })));
-    this.shadowRoot.querySelectorAll("[data-delay]").forEach((element) => element.addEventListener("click", () => this._service("number", "set_value", { entity_id: this._entities.delay, value: Number(element.dataset.delay) })));
-    this.shadowRoot.querySelector('[data-action="power"]')?.addEventListener("click", () => this._service("switch", "turn_on", { entity_id: this._entities.power }));
-    this.shadowRoot.querySelector('[data-action="stop"]')?.addEventListener("click", () => {
-      if (globalThis.confirm(this._text.confirm)) this._service("button", "press", { entity_id: this._entities.stop });
+_bind() {
+  this.shadowRoot
+    .querySelectorAll("[data-info]")
+    .forEach((element) =>
+      element.addEventListener("click", () =>
+        this._moreInfo(element.dataset.info)
+      )
+    );
+
+  this.shadowRoot
+    .querySelectorAll("[data-toggle]")
+    .forEach((element) =>
+      element.addEventListener("click", () =>
+        this._service("homeassistant", "toggle", {
+          entity_id:
+            this._entities[element.dataset.toggle],
+        })
+      )
+    );
+
+  this.shadowRoot
+    .querySelectorAll("[data-delay]")
+    .forEach((element) =>
+      element.addEventListener("click", () =>
+        this._service("number", "set_value", {
+          entity_id: this._entities.delay,
+          value: Number(element.dataset.delay),
+        })
+      )
+    );
+
+  this.shadowRoot
+    .querySelector('[data-action="power"]')
+    ?.addEventListener("click", () =>
+      this._service("switch", "turn_on", {
+        entity_id: this._entities.power,
+      })
+    );
+
+  this.shadowRoot
+    .querySelector('[data-action="stop"]')
+    ?.addEventListener("click", () => {
+      if (globalThis.confirm(this._text.confirm)) {
+        this._service("button", "press", {
+          entity_id: this._entities.stop,
+        });
+      }
     });
-    this.shadowRoot.getElementById("program")?.addEventListener("change", (event) => this._service("select", "select_option", { entity_id: this._entities.selectedProgram, option: event.target.value }));
+
+  const programMenu =
+    this.shadowRoot.getElementById("program");
+
+  if (programMenu) {
+    const state =
+      this._state("selectedProgram");
+
+    const options =
+      state?.attributes?.options || [];
+
+    programMenu.label = this._text.program;
+    programMenu.value = state.state;
+    programMenu.disabled = this._running();
+
+    programMenu.options = options.map((value) => ({
+      value,
+      label: this._programLabel(value),
+    }));
+
+    programMenu.addEventListener(
+      "wa-select",
+      (event) => {
+        const selectedValue =
+          event.detail?.item?.value;
+
+        if (
+          !selectedValue ||
+          selectedValue === state.state
+        ) {
+          return;
+        }
+
+        this._service(
+          "select",
+          "select_option",
+          {
+            entity_id:
+              this._entities.selectedProgram,
+            option: selectedValue,
+          }
+        );
+      }
+    );
   }
+}
 
   _moreInfo(key) {
     const entityId = this._entities[key];
