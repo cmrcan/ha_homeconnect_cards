@@ -1,6 +1,18 @@
 # HA Home Connect Cards
 
+<p align="center">
+  <img
+    src="https://raw.githubusercontent.com/cmrcan/ha_homeconnect_cards/main/docs/images/logo.png"
+    alt="Home Connect Cards"
+    width="180"
+  >
+</p>
 
+<h1 align="center">Home Connect Cards</h1>
+
+<p align="center">
+  Home Assistant cards for Home Connect appliances.
+</p>
 
 
 
