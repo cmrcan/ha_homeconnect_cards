@@ -298,7 +298,7 @@ class HomeConnectCard extends HTMLElement {
           },
         },
         { name: "title", selector: { text: {} } },
-        { name: "accent_color", selector: { text: {} } },
+        
         {
           type: "grid",
           name: "",
@@ -603,7 +603,9 @@ _programLabel(value) {
 
     this.shadowRoot.innerHTML = this._frame(`
       
+
         <div class="card-header">
+          <ha-icon slot="icon" icon="${this._escape(this._profileIcon(profile))}"></ha-icon>
           <div class="title">${this._escape(this._title())}</div><div class="subtitle">${this._escape(this._programLabel(program))}</div>
             ${connectivity ? `<ha-badge type="button" data-info="connectivity" style="--badge-color:${connectivityColor}"><ha-icon slot="icon" icon="mdi:lan-connect"></ha-icon><span>${this._escape(connectivityText)}</span></ha-badge>` : ""}
         </div>
@@ -668,12 +670,30 @@ _programControl(running) {
     return "";
   }
 
+  const poweredOff =
+    this._state("power")?.state === "off";
+
   return `
     <section class="program-control">
-      <ha-control-select-menu
-        id="program"
-        show-arrow
-      ></ha-control-select-menu>
+      <div class="program-select-wrapper">
+        <ha-control-select-menu
+          id="program"
+          show-arrow
+        ></ha-control-select-menu>
+
+        ${
+          poweredOff
+            ? `
+              <button
+                class="program-power-overlay"
+                data-action="enable-program-selection"
+                aria-label="Makineyi aç"
+                type="button"
+              ></button>
+            `
+            : ""
+        }
+      </div>
     </section>
   `;
 }
