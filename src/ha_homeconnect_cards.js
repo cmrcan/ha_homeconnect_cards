@@ -696,7 +696,6 @@ _programControl(running) {
           ${canStart ? "" : "disabled"}
         >
           <ha-icon icon="mdi:play"></ha-icon>
-          <span>${this._escape(this._text.start)}</span>
         </ha-control-button>
 
         <ha-control-button
@@ -706,7 +705,6 @@ _programControl(running) {
           ${canStop ? "" : "disabled"}
         >
           <ha-icon icon="mdi:stop"></ha-icon>
-          <span>${this._escape(this._text.stop)}</span>
         </ha-control-button>
       </ha-control-button-group>
     </section>
