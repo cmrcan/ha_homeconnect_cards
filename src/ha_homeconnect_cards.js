@@ -653,46 +653,71 @@ _programLabel(value) {
   }
 
 _programControl(running) {
-  if (
-    !this._config.show_program ||
-    !this._available("selectedProgram")
-  ) {
+  if (!this._config.show_program || !this._state("selectedProgram")) {
     return "";
   }
 
   const state = this._state("selectedProgram");
   const options = state?.attributes?.options || [];
+  const poweredOff = this._state("power")?.state === "off";
 
-  if (!options.length) {
+  if (!options.length && !poweredOff) {
     return "";
   }
 
-  const poweredOff =
-    this._state("power")?.state === "off";
+  const hasProgram = !["", "none", "unknown", "unavailable"].includes(state.state);
+  const canStart = Boolean(
+    this._startDeviceId() && hasProgram && !running && !poweredOff
+  );
+  const stopState = this._state("stop");
+  const canStop = Boolean(
+    stopState && stopState.state !== "unavailable" && running
+  );
 
   return `
     <section class="program-control">
-      <div class="program-select-wrapper">
-        <ha-control-select-menu
-          id="program"
-          show-arrow
-        ></ha-control-select-menu>
+      <ha-control-button-group class="program-actions">
+        <div class="program-select-wrapper">
+          <ha-control-select-menu id="program" show-arrow></ha-control-select-menu>
+          ${poweredOff ? `
+            <button
+              class="program-power-overlay"
+              data-action="enable-program-selection"
+              aria-label="${this._escape(this._text.powerOn)}"
+              type="button"
+            ></button>
+          ` : ""}
+        </div>
 
-        ${
-          poweredOff
-            ? `
-              <button
-                class="program-power-overlay"
-                data-action="enable-program-selection"
-                aria-label="Makineyi aç"
-                type="button"
-              ></button>
-            `
-            : ""
-        }
-      </div>
+        <ha-control-button
+          class="program-start"
+          data-action="start"
+          label="${this._escape(this._text.start)}"
+          ${canStart ? "" : "disabled"}
+        >
+          <ha-icon icon="mdi:play"></ha-icon>
+          <span>${this._escape(this._text.start)}</span>
+        </ha-control-button>
+
+        <ha-control-button
+          class="program-stop"
+          data-action="stop"
+          label="${this._escape(this._text.stop)}"
+          ${canStop ? "" : "disabled"}
+        >
+          <ha-icon icon="mdi:stop"></ha-icon>
+          <span>${this._escape(this._text.stop)}</span>
+        </ha-control-button>
+      </ha-control-button-group>
     </section>
   `;
+}
+
+_startDeviceId() {
+  return (
+    this._config?.device_id ||
+    this._hass?.entities?.[this._entities?.selectedProgram]?.device_id
+  );
 }
 
   _delayControl(running) {
@@ -719,12 +744,13 @@ _programControl(running) {
     return buttons ? `<section><label><ha-icon icon="mdi:tune-variant"></ha-icon>${this._text.options}</label><div class="options">${buttons}</div></section>` : "";
   }
 
-  _actions() {
-    const power = this._available("power") && !this._on("power");
-    const stop = Boolean(this._state("stop")) && this._running();
-    if (!power && !stop) return "";
-    return `<footer>${power ? `<button class="action primary" data-action="power"><ha-icon icon="mdi:power"></ha-icon>${this._text.powerOn}</button>` : ""}${stop ? `<button class="action danger" data-action="stop"><ha-icon icon="mdi:stop-circle-outline"></ha-icon>${this._text.stop}</button>` : ""}</footer>`;
-  }
+_actions() {
+  const power = this._available("power") && !this._on("power");
+
+  return power
+    ? `<footer><button class="action primary" data-action="power"><ha-icon icon="mdi:power"></ha-icon>${this._text.powerOn}</button></footer>`
+    : "";
+}
 
 _bind() {
   this.shadowRoot
@@ -765,6 +791,29 @@ _bind() {
       })
     );
 
+
+    this.shadowRoot
+  .querySelector('[data-action="enable-program-selection"]')
+  ?.addEventListener("click", () => {
+    if (globalThis.confirm(this._text.powerForProgram)) {
+      this._service("switch", "turn_on", {
+        entity_id: this._entities.power,
+      });
+    }
+  });
+
+this.shadowRoot
+  .querySelector('[data-action="start"]')
+  ?.addEventListener("click", () => {
+    const deviceId = this._startDeviceId();
+
+    if (deviceId && !this._running() && this._state("power")?.state !== "off") {
+      this._service("home_connect", "start_selected_program", {
+        device_id: deviceId,
+      });
+    }
+  });
+
   this.shadowRoot
     .querySelector('[data-action="stop"]')
     ?.addEventListener("click", () => {
@@ -787,7 +836,8 @@ _bind() {
 
     programMenu.label = this._text.program;
     programMenu.value = state.state;
-    programMenu.disabled = this._running();
+    programMenu.disabled =
+  this._running() || this._state("power")?.state === "off";
 
     programMenu.options = options.map((value) => ({
       value,
