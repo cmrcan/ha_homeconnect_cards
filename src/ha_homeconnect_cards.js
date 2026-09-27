@@ -678,7 +678,7 @@ _programControl(running) {
     <section class="program-control">
       <ha-control-button-group class="program-actions">
         <div class="program-select-wrapper">
-          <ha-control-select-menu id="program" show-arrow></ha-control-select-menu>
+          <ha-control-select-menu id="program" show-arrow hide-label></ha-control-select-menu>
           ${poweredOff ? `
             <button
               class="program-power-overlay"
