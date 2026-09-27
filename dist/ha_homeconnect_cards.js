@@ -579,68 +579,45 @@ class HomeConnectCard extends HTMLElement {
     this.shadowRoot.innerHTML = this._frame(`
       <ha-card" style="--accent:${this._escape(this._config.accent_color || "var(--primary-color)")}">
         <div class="header">
-          <div><div class="title">${this._escape(this._title())}</div><div class="subtitle">${this._escape(this._programLabel(program))}</div></div>
-         
-${
-  connectivity
-    ? ` <ha-badge type="button" data-info="connectivity" style="--badge-color:${connectivityColor}">
-    <ha-icon slot="icon" icon="mdi:lan-connect"></ha-icon>
-    <span>${this._escape(connectivityText)}</span>
-  </ha-badge>
-`
-    : ""
-}
+          <div class="title">${this._escape(this._title())}</div><div class="subtitle">${this._escape(this._programLabel(program))}</div>
+            ${connectivity ? `<ha-badge type="button" data-info="connectivity" style="--badge-color:${connectivityColor}"><ha-icon slot="icon" icon="mdi:lan-connect"></ha-icon><span>${this._escape(connectivityText)}</span></ha-badge>` : ""}
+        </div>
+        <div class="hero">
 
-        </header>
-     <div class="hero">
+          <div class="visual ${running ? "running" : ""}">
+            <div class="machine">
+              <ha-icon icon="${this._escape(profile.icon)}"></ha-icon>
+              ${running ? '<i class="b1"></i><i class="b2"></i><i class="b3"></i>' : ""}
+            </div>
+          </div>
 
-  <div class="visual ${running ? "running" : ""}">
-    <div class="machine">
-      <ha-icon icon="${this._escape(profile.icon)}"></ha-icon>
-      ${running ? '<i class="b1"></i><i class="b2"></i><i class="b3"></i>' : ""}
-    </div>
-  </div>
+          <div class="summary">
+            <div class="operation ${this._escape(operation)}">
+              ${this._escape(t[operation] || t.unknown)}
+            </div>
 
-  <div class="summary">
-    <div class="operation ${this._escape(operation)}">
-      ${this._escape(t[operation] || t.unknown)}
-    </div>
+            <div class="program">
+              ${this._escape(this._programLabel(program))}
+            </div>
 
-    <div class="program">
-      ${this._escape(this._programLabel(program))}
-    </div>
+            <div class="facts">
+              ${finish ? `<div><ha-icon icon="mdi:clock-check-outline"></ha-icon><span><small>${t.finish}</small>${this._escape(finish)}</span></div>` : ""}
+              ${this._state("door") ? `<div><ha-icon icon="${door.icon}"></ha-icon><span><small>${t.program}</small>${this._escape(door.label)}</span></div>` : ""}
+            </div>
+          </div>
+        </div>
 
-    <div class="facts">
-      ${finish ? `<div><ha-icon icon="mdi:clock-check-outline"></ha-icon><span><small>${t.finish}</small>${this._escape(finish)}</span></div>` : ""}
-      ${this._state("door") ? `<div><ha-icon icon="${door.icon}"></ha-icon><span><small>${t.program}</small>${this._escape(door.label)}</span></div>` : ""}
-    </div>
-  </div>
-
-</div>
-
-${
-  showProgress
-    ? `
-  <section data-info="progress">
-    <label>
-      <ha-icon icon="mdi:progress-clock"></ha-icon>
-      ${this._escape(progressName)} · ${this._escape(progressText)}
-    </label>
-
-  <ha-bar
-  min="0"
-  max="100"
-  value="${progress}"
-  style="display:block;width:100%"
-></ha-bar>
-  </section>
-`
-    : ""
-}
+        ${showProgress ? `
+          <section data-info="progress">
+            <label>      <ha-icon icon="mdi:progress-clock"></ha-icon> ${this._escape(progressName)} · ${this._escape(progressText)} </label>
+            <ha-bar min="0" max="100" value="${progress}" style="display:block;width:100%"></ha-bar>
+          </section>
+        ` : ""}
         <div class="pills">
           ${this._state("door") ? `<button class="pill ${door.tone}" data-info="door"><ha-icon icon="${door.icon}"></ha-icon>${this._escape(door.label)}</button>` : ""}
           ${this._state("remoteStart") ? `<button class="pill ${remote ? "good" : "muted"}" data-info="remoteStart"><ha-icon icon="${remote ? "mdi:play-network" : "mdi:play-network-outline"}"></ha-icon>${remote ? t.remote : t.noRemote}</button>` : ""}
         </div>
+        
         ${this._programControl(running)}
         ${this._delayControl(running)}
         ${this._optionControls()}
