@@ -366,7 +366,7 @@ class HomeConnectCard extends HTMLElement {
     return 5;
   }
   getGridOptions() {
-    return { columns: 12, min_columns: 6, rows: auto };
+    return { columns: 12, min_columns: 6, rows: "auto" };
   }
 
   get _language() {
