@@ -1,9 +1,7 @@
-# HA Home Connect Cards
-
 <p align="center">
   <img
     src="https://raw.githubusercontent.com/cmrcan/ha_homeconnect_cards/main/docs/images/logo.png"
-    alt="Home Connect Cards"
+    alt="Home Connect Cards Logo"
     width="180"
   >
 </p>
