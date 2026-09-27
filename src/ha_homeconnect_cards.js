@@ -145,15 +145,6 @@ const detectApplianceProfile = (device) => {
   };
 };
 
-const DEFAULT_PROGRAMS = {
-  dishcare_dishwasher_program_intensiv_70: "Intensiv 70 °C",
-  dishcare_dishwasher_program_auto_2: "Auto",
-  dishcare_dishwasher_program_eco_50: "Eco 50 °C",
-  dishcare_dishwasher_program_quick_45: "Schnell 45 °C",
-  dishcare_dishwasher_program_pre_rinse: "Vorspülen",
-  dishcare_dishwasher_program_quick_65: "Schnell 65 °C",
-  dishcare_dishwasher_program_machine_care: "Maschinenpflege",
-};
 
 const TEXT = {
   de: {
@@ -458,11 +449,45 @@ class HomeConnectCard extends HTMLElement {
     return invalid.includes(selected) ? "" : selected;
   }
 
-  _programLabel(value) {
-    if (!value) return this._text.noProgram;
-    const names = { ...DEFAULT_PROGRAMS, ...(this._config.program_names || {}) };
-    return names[value] || value.replace(/^dishcare_dishwasher_program_/, "").replaceAll("_", " ");
+_programLabel(value) {
+  if (!value) {
+    return this._text.noProgram;
   }
+
+  const customName =
+    this._config.program_names?.[value];
+
+  if (customName) {
+    return customName;
+  }
+
+  const state =
+    this._state("selectedProgram") ||
+    this._state("activeProgram");
+
+  if (state && this._hass?.formatEntityState) {
+    const translated =
+      this._hass.formatEntityState(state, value);
+
+    if (translated && translated !== value) {
+      return translated;
+    }
+  }
+
+  const cleaned = String(value)
+    .replace(/^.*?_program_/, "")
+    .replace(
+      /^(beverage|cleaning_modes|heating_mode)_/,
+      ""
+    )
+    .replaceAll("_", " ")
+    .trim();
+
+  return cleaned.replace(
+    /\b[a-z]/g,
+    (letter) => letter.toUpperCase()
+  );
+}
 
   _finish() {
     const value = this._state("finish")?.state;
