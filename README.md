@@ -16,7 +16,7 @@
 
 ## Features
 
-- Automatic Home Connect entity discovery from a Home Assistant `device_id`
+- Device discovery from Home Connect integration.
 - Operation state, programme, progress, finish time, connectivity, remote-start and door status
 - Programme selection, start-delay presets and dishwasher options
 - Power-on and confirmed programme-stop actions
@@ -34,7 +34,7 @@ The supported minimum is **Home Assistant 2026.6.0 or newer**. The card has been
 
 1. Open HACS.
 2. Add this repository as a custom repository with category **Dashboard**.
-3. Install **Home Connect Dishwasher Card**.
+3. Install **HA Home Connect Cards**.
 4. Reload the browser.
 
 HACS installs the resource as:

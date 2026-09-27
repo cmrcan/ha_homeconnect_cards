@@ -577,8 +577,8 @@ class HomeConnectCard extends HTMLElement {
     const progressName = progressState?.attributes?.friendly_name || t.progress;
 
     this.shadowRoot.innerHTML = this._frame(`
-      <div class="card" style="--accent:${this._escape(this._config.accent_color || "var(--primary-color)")}">
-        <header>
+      <ha-card" style="--accent:${this._escape(this._config.accent_color || "var(--primary-color)")}">
+        <div class="header">
           <div><div class="title">${this._escape(this._title())}</div><div class="subtitle">${this._escape(this._programLabel(program))}</div></div>
          
 ${
@@ -618,7 +618,9 @@ ${
 
 </div>
 
-${showProgress ? `
+${
+  showProgress
+    ? `
   <section data-info="progress">
     <label>
       <ha-icon icon="mdi:progress-clock"></ha-icon>
@@ -632,7 +634,9 @@ ${showProgress ? `
   style="display:block;width:100%"
 ></ha-bar>
   </section>
-` : ""}
+`
+    : ""
+}
         <div class="pills">
           ${this._state("door") ? `<button class="pill ${door.tone}" data-info="door"><ha-icon icon="${door.icon}"></ha-icon>${this._escape(door.label)}</button>` : ""}
           ${this._state("remoteStart") ? `<button class="pill ${remote ? "good" : "muted"}" data-info="remoteStart"><ha-icon icon="${remote ? "mdi:play-network" : "mdi:play-network-outline"}"></ha-icon>${remote ? t.remote : t.noRemote}</button>` : ""}
@@ -641,7 +645,7 @@ ${showProgress ? `
         ${this._delayControl(running)}
         ${this._optionControls()}
         ${this._actions()}
-      </div>
+      </ha-card>
     `);
 
     this._bind();
