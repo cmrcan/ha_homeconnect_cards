@@ -606,16 +606,13 @@ _programLabel(value) {
 
         <div class="card-header">
           <ha-icon slot="icon" icon="${this._escape(this._profileIcon(profile))}"></ha-icon>
-          <div class="title">${this._escape(this._title())}</div><div class="subtitle">${this._escape(this._programLabel(program))}</div>
+          <div class="title">${this._escape(this._title())}</div><div class="subtitle"></div>
             ${connectivity ? `<ha-badge type="button" data-info="connectivity" style="--badge-color:${connectivityColor}"><ha-icon slot="icon" icon="mdi:lan-connect"></ha-icon><span>${this._escape(connectivityText)}</span></ha-badge>` : ""}
         </div>
         <div class="card-content">
 
           <div class="visual ${running ? "running" : ""}">
-            <div class="machine">
-              <ha-icon icon="${this._escape(profile.icon)}"></ha-icon>
-              ${running ? '<i class="b1"></i><i class="b2"></i><i class="b3"></i>' : ""}
-            </div>
+         
           </div>
 
           <div class="summary">
