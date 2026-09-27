@@ -577,7 +577,7 @@ class HomeConnectCard extends HTMLElement {
     const progressName = progressState?.attributes?.friendly_name || t.progress;
 
     this.shadowRoot.innerHTML = this._frame(`
-      <ha-tile-container" style="--accent:${this._escape(this._config.accent_color || "var(--primary-color)")}">
+      
         <div class="card-header">
           <div class="title">${this._escape(this._title())}</div><div class="subtitle">${this._escape(this._programLabel(program))}</div>
             ${connectivity ? `<ha-badge type="button" data-info="connectivity" style="--badge-color:${connectivityColor}"><ha-icon slot="icon" icon="mdi:lan-connect"></ha-icon><span>${this._escape(connectivityText)}</span></ha-badge>` : ""}
@@ -622,7 +622,7 @@ class HomeConnectCard extends HTMLElement {
         ${this._delayControl(running)}
         ${this._optionControls()}
         ${this._actions()}
-      </ha-tile-container>
+     
     `);
 
     this._bind();
