@@ -577,7 +577,7 @@ class HomeConnectCard extends HTMLElement {
     const progressName = progressState?.attributes?.friendly_name || t.progress;
 
     this.shadowRoot.innerHTML = this._frame(`
-      <div" style="--accent:${this._escape(this._config.accent_color || "var(--primary-color)")}">
+      <ha-tile-container" style="--accent:${this._escape(this._config.accent_color || "var(--primary-color)")}">
         <div class="card-header">
           <div class="title">${this._escape(this._title())}</div><div class="subtitle">${this._escape(this._programLabel(program))}</div>
             ${connectivity ? `<ha-badge type="button" data-info="connectivity" style="--badge-color:${connectivityColor}"><ha-icon slot="icon" icon="mdi:lan-connect"></ha-icon><span>${this._escape(connectivityText)}</span></ha-badge>` : ""}
@@ -613,16 +613,16 @@ class HomeConnectCard extends HTMLElement {
             <ha-bar min="0" max="100" value="${progress}" style="display:block;width:100%"></ha-bar>
           </section>
         ` : ""}
-        <div class="pills">
+        <hui-card-features>
           ${this._state("door") ? `<button class="pill ${door.tone}" data-info="door"><ha-icon icon="${door.icon}"></ha-icon>${this._escape(door.label)}</button>` : ""}
           ${this._state("remoteStart") ? `<button class="pill ${remote ? "good" : "muted"}" data-info="remoteStart"><ha-icon icon="${remote ? "mdi:play-network" : "mdi:play-network-outline"}"></ha-icon>${remote ? t.remote : t.noRemote}</button>` : ""}
-        </div>
+        </hui-card-features>
 
         ${this._programControl(running)}
         ${this._delayControl(running)}
         ${this._optionControls()}
         ${this._actions()}
-      </div>
+      </ha-tile-container>
     `);
 
     this._bind();
